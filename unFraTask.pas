@@ -41,10 +41,17 @@ begin
   var lRunnerInt: IAbortableTaskAsyncRunner<Integer>;
   if Supports(fRunner, IAbortableTaskAsyncRunner<Integer>, lRunnerInt) then
   begin
+    btWaitFor.Enabled := False;
     var lWaitResult := lRunnerInt.WaitForTaskResult;
-    ShowMessage('Result: ' + IntToStr(lWaitResult.Result) + sLineBreak + sLineBreak +
-      'State: ' + IntToStr(Ord(lWaitResult.FinishedState)) + sLineBreak +
-      'Exception: [' + lWaitResult.ExceptionClass.ClassName + '] ' + lWaitResult.ExceptionMessage);
+    var lText := 'Result: ' + IntToStr(lWaitResult.Result) + sLineBreak + sLineBreak +
+      'State: ' + IntToStr(Ord(lWaitResult.FinishedState));
+    if Assigned(lWaitResult.ExceptionClass) then
+    begin
+      lText := lText + sLineBreak +
+        'Exception: ' + lWaitResult.ExceptionClass.ClassName + sLineBreak +
+        'Message: ' + lWaitResult.ExceptionMessage;
+    end;
+    ShowMessage(lText);
   end;
 end;
 

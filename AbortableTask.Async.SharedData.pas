@@ -35,7 +35,6 @@ constructor TAbortableTaskAsyncSharedData<T>.Create;
 begin
   inherited Create;
   fCritialSection := TCriticalSection.Create;
-  fExceptionClass := Self.ClassType; // Self.ClassType is used like a null implementation here.
 end;
 
 destructor TAbortableTaskAsyncSharedData<T>.Destroy;
