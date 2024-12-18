@@ -65,7 +65,7 @@ begin
   finally
     lStream.Free;
   end;
-  Result := 855;
+  Result := fKey;
 end;
 
 function TExampleTask.GetResultForAbort(const aException: Exception): Integer;
@@ -80,7 +80,7 @@ end;
 
 function TExampleTask.GetTaskName: string;
 begin
-  Result := ClassName;
+  Result := ClassName + ' ' + IntToStr(fKey);
 end;
 
 end.

@@ -52,6 +52,9 @@ begin
   lFrame.Parent := ScrollBox;
   lFrame.Align := TAlign.alTop;
   lFrame.Visible := True;
+
+  var lTask: IAbortableTask<Integer, Integer> := TExampleTask.Create(fFrameCounter, lFrame);
+  lFrame.NewTask(lTask, fAbortableAsyncTaskList);
 end;
 
 procedure TfmMain.FormCloseQuery(Sender: TObject; var CanClose: Boolean);

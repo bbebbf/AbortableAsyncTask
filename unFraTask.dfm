@@ -23,7 +23,7 @@ object fraTask: TfraTask
     Anchors = [akTop, akRight, akBottom]
     Caption = 'WaitFor'
     TabOrder = 2
-    ExplicitLeft = 640
+    OnClick = btWaitForClick
   end
   object btAbort: TButton
     Left = 536
@@ -33,6 +33,6 @@ object fraTask: TfraTask
     Anchors = [akTop, akRight, akBottom]
     Caption = 'Abort'
     TabOrder = 1
-    ExplicitLeft = 559
+    OnClick = btAbortClick
   end
 end
