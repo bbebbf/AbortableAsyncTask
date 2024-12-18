@@ -8,6 +8,7 @@ type
   TExampleTask = class(TInterfacedObject, IAbortableTask<Integer, Integer>)
   strict private
     fKey: Integer;
+    fMax: Integer;
     fProgressIndicator: IAbortableProgressIndicator<Integer>;
     function GetTaskName: string;
     procedure ExchangeProgressIndicator(out aTaskProgressIndicator: IAbortableProgressIndicator<Integer>;
@@ -30,6 +31,8 @@ begin
   inherited Create;
   fKey := aKey;
   fProgressIndicator := aProgressIndicator;
+  Randomize;
+  fMax := Random(200) + 20;
 end;
 
 procedure TExampleTask.ExchangeProgressIndicator(out aTaskProgressIndicator: IAbortableProgressIndicator<Integer>;
@@ -48,14 +51,13 @@ begin
   try
     lWriter := TStreamWriter.Create(lStream, TEncoding.UTF8);
     try
-      const lMax = 20;
       lWriter.Write('Begin > ' + FormatDateTime('hh:nn:ss:zzz', Now)  + sLineBreak);
-      fProgressIndicator.ProgressBegin(fKey, lMax);
-      for var i := 1 to lMax do
+      fProgressIndicator.ProgressBegin(fKey, fMax);
+      for var i := 1 to fMax do
       begin
         fProgressIndicator.ProgressStep(fKey, i);
         lWriter.Write(IntToStr(i) + ' > ' + FormatDateTime('hh:nn:ss:zzz', Now)  + sLineBreak);
-        Sleep(500);
+        Sleep(Random(900) + 100);
       end;
     finally
       fProgressIndicator.ProgressEnd(fKey);
