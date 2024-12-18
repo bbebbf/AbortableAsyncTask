@@ -2,21 +2,21 @@ unit ExampleTask;
 
 interface
 
-uses System.SysUtils, AbortableAsyncTask.Types;
+uses System.SysUtils, AbortableTask.Types;
 
 type
-  TExampleTask = class(TInterfacedObject, IAbortableAsyncTask<Integer, Integer>)
+  TExampleTask = class(TInterfacedObject, IAbortableTask<Integer, Integer>)
   strict private
     fKey: Integer;
-    fProgressIndicator: IAbortableAsyncProgressIndicator<Integer>;
+    fProgressIndicator: IAbortableProgressIndicator<Integer>;
     function GetTaskName: string;
-    procedure ExchangeProgressIndicator(out aTaskProgressIndicator: IAbortableAsyncProgressIndicator<Integer>;
-      const aThreadProgressIndicator: IAbortableAsyncProgressIndicator<Integer>);
+    procedure ExchangeProgressIndicator(out aTaskProgressIndicator: IAbortableProgressIndicator<Integer>;
+      const aThreadProgressIndicator: IAbortableProgressIndicator<Integer>);
     function ExecuteTask: Integer;
     function GetResultForOccurredException(const aException: Exception): Integer;
     function GetResultForAbort(const aException: Exception): Integer;
   public
-    constructor Create(const aKey: Integer; const aProgressIndicator: IAbortableAsyncProgressIndicator<Integer>);
+    constructor Create(const aKey: Integer; const aProgressIndicator: IAbortableProgressIndicator<Integer>);
   end;
 
 implementation
@@ -25,15 +25,15 @@ uses System.Classes, System.IOUtils;
 
 { TExampleTask }
 
-constructor TExampleTask.Create(const aKey: Integer; const aProgressIndicator: IAbortableAsyncProgressIndicator<Integer>);
+constructor TExampleTask.Create(const aKey: Integer; const aProgressIndicator: IAbortableProgressIndicator<Integer>);
 begin
   inherited Create;
   fKey := aKey;
   fProgressIndicator := aProgressIndicator;
 end;
 
-procedure TExampleTask.ExchangeProgressIndicator(out aTaskProgressIndicator: IAbortableAsyncProgressIndicator<Integer>;
-  const aThreadProgressIndicator: IAbortableAsyncProgressIndicator<Integer>);
+procedure TExampleTask.ExchangeProgressIndicator(out aTaskProgressIndicator: IAbortableProgressIndicator<Integer>;
+  const aThreadProgressIndicator: IAbortableProgressIndicator<Integer>);
 begin
   aTaskProgressIndicator := fProgressIndicator;
   fProgressIndicator := aThreadProgressIndicator;
@@ -43,7 +43,7 @@ function TExampleTask.ExecuteTask: Integer;
 var lStream: TStream;
   lWriter: TTextWriter;
 begin
-  lStream := TFileStream.Create(TPath.Combine(ExtractFilePath(ParamStr(0)), 'ExampleTask' + IntToStr(0) + '.txt'),
+  lStream := TFileStream.Create(TPath.Combine(ExtractFilePath(ParamStr(0)), 'ExampleTask' + IntToStr(fKey) + '.txt'),
     fmCreate or fmOpenWrite or fmShareDenyWrite);
   try
     lWriter := TStreamWriter.Create(lStream, TEncoding.UTF8);
@@ -55,7 +55,7 @@ begin
       begin
         fProgressIndicator.ProgressStep(fKey, i);
         lWriter.Write(IntToStr(i) + ' > ' + FormatDateTime('hh:nn:ss:zzz', Now)  + sLineBreak);
-        Sleep(1000);
+        Sleep(500);
       end;
     finally
       fProgressIndicator.ProgressEnd(fKey);

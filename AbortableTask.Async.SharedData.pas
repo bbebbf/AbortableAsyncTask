@@ -1,23 +1,23 @@
-unit AbortableAsyncTask.SharedData;
+unit AbortableTask.Async.SharedData;
 
 interface
 
-uses System.SysUtils, System.SyncObjs, AbortableAsyncTask.Types;
+uses System.SysUtils, System.SyncObjs, AbortableTask.Types;
 
 type
-  TAbortableAsyncTaskSharedData<T> = class(TInterfacedObject, IAbortableAsyncTaskSharedData<T>)
+  TAbortableTaskAsyncSharedData<T> = class(TInterfacedObject, IAbortableTaskAsyncSharedData<T>)
   strict private
     fCritialSection: TCriticalSection;
     fAbortRequested: Boolean;
     fTaskResult: T;
-    fFinishedState: TAbortableAsyncTaskTaskFinishedState;
+    fFinishedState: TAbortableTaskFinishedState;
     fExceptionMessage: string;
     fExceptionClass: TClass;
     function GetExceptionMessage: string;
     function GetExceptionClass: TClass;
     function GetAbortRequested: Boolean;
     function GetTaskResult: T;
-    function GetFinishedState: TAbortableAsyncTaskTaskFinishedState;
+    function GetFinishedState: TAbortableTaskFinishedState;
     procedure RequestAbort;
     procedure SetSucceededState(const aTaskResult: T);
     procedure SetAbortedState(const aException: Exception; const aTaskResult: T);
@@ -29,22 +29,22 @@ type
 
 implementation
 
-{ TAbortableAsyncTaskSharedData<T> }
+{ TAbortableTaskAsyncSharedData<T> }
 
-constructor TAbortableAsyncTaskSharedData<T>.Create;
+constructor TAbortableTaskAsyncSharedData<T>.Create;
 begin
   inherited Create;
   fCritialSection := TCriticalSection.Create;
   fExceptionClass := Self.ClassType; // Self.ClassType is used like a null implementation here.
 end;
 
-destructor TAbortableAsyncTaskSharedData<T>.Destroy;
+destructor TAbortableTaskAsyncSharedData<T>.Destroy;
 begin
   fCritialSection.Free;
   inherited;
 end;
 
-function TAbortableAsyncTaskSharedData<T>.GetFinishedState: TAbortableAsyncTaskTaskFinishedState;
+function TAbortableTaskAsyncSharedData<T>.GetFinishedState: TAbortableTaskFinishedState;
 begin
   fCritialSection.Enter;
   try
@@ -54,7 +54,7 @@ begin
   end;
 end;
 
-function TAbortableAsyncTaskSharedData<T>.GetTaskResult: T;
+function TAbortableTaskAsyncSharedData<T>.GetTaskResult: T;
 begin
   fCritialSection.Enter;
   try
@@ -64,7 +64,7 @@ begin
   end;
 end;
 
-function TAbortableAsyncTaskSharedData<T>.GetAbortRequested: Boolean;
+function TAbortableTaskAsyncSharedData<T>.GetAbortRequested: Boolean;
 begin
   fCritialSection.Enter;
   try
@@ -74,7 +74,7 @@ begin
   end;
 end;
 
-function TAbortableAsyncTaskSharedData<T>.GetExceptionClass: TClass;
+function TAbortableTaskAsyncSharedData<T>.GetExceptionClass: TClass;
 begin
   fCritialSection.Enter;
   try
@@ -84,7 +84,7 @@ begin
   end;
 end;
 
-function TAbortableAsyncTaskSharedData<T>.GetExceptionMessage: string;
+function TAbortableTaskAsyncSharedData<T>.GetExceptionMessage: string;
 begin
   fCritialSection.Enter;
   try
@@ -94,7 +94,7 @@ begin
   end;
 end;
 
-procedure TAbortableAsyncTaskSharedData<T>.RequestAbort;
+procedure TAbortableTaskAsyncSharedData<T>.RequestAbort;
 begin
   fCritialSection.Enter;
   try
@@ -104,38 +104,38 @@ begin
   end;
 end;
 
-procedure TAbortableAsyncTaskSharedData<T>.SetSucceededState(const aTaskResult: T);
+procedure TAbortableTaskAsyncSharedData<T>.SetSucceededState(const aTaskResult: T);
 begin
   fCritialSection.Enter;
   try
     fTaskResult := aTaskResult;
-    fFinishedState := TAbortableAsyncTaskTaskFinishedState.Succeeded;
+    fFinishedState := TAbortableTaskFinishedState.Succeeded;
   finally
     fCritialSection.Leave;
   end;
 end;
 
-procedure TAbortableAsyncTaskSharedData<T>.SetAbortedState(const aException: Exception; const aTaskResult: T);
+procedure TAbortableTaskAsyncSharedData<T>.SetAbortedState(const aException: Exception; const aTaskResult: T);
 begin
   fCritialSection.Enter;
   try
     fTaskResult := aTaskResult;
     fExceptionMessage := aException.Message;
     fExceptionClass := aException.ClassType;
-    fFinishedState := TAbortableAsyncTaskTaskFinishedState.Aborted;
+    fFinishedState := TAbortableTaskFinishedState.Aborted;
   finally
     fCritialSection.Leave;
   end;
 end;
 
-procedure TAbortableAsyncTaskSharedData<T>.SetExceptedState(const aException: Exception; const aTaskResult: T);
+procedure TAbortableTaskAsyncSharedData<T>.SetExceptedState(const aException: Exception; const aTaskResult: T);
 begin
   fCritialSection.Enter;
   try
     fTaskResult := aTaskResult;
     fExceptionMessage := aException.Message;
     fExceptionClass := aException.ClassType;
-    fFinishedState := TAbortableAsyncTaskTaskFinishedState.Excepted;
+    fFinishedState := TAbortableTaskFinishedState.Excepted;
   finally
     fCritialSection.Leave;
   end;

@@ -1,29 +1,29 @@
-unit AbortableAsyncTask.Result;
+unit AbortableTask.Result;
 
 interface
 
-uses System.SysUtils, AbortableAsyncTask.Types;
+uses System.SysUtils, AbortableTask.Types;
 
 type
-  TAbortableAsyncTaskResultBase = class(TInterfacedObject, IAbortableAsyncTaskResultBase)
+  TAbortableAsyncTaskResultBase = class(TInterfacedObject, IAbortableTaskResultBase)
   strict private
-    fFinishedState: TAbortableAsyncTaskTaskFinishedState;
+    fFinishedState: TAbortableTaskFinishedState;
     fExceptionMessage: string;
     fExceptionClass: TClass;
-    function GetFinishedState: TAbortableAsyncTaskTaskFinishedState;
+    function GetFinishedState: TAbortableTaskFinishedState;
     function GetExceptionMessage: string;
     function GetExceptionClass: TClass;
   public
-    constructor Create(const aFinishedState: TAbortableAsyncTaskTaskFinishedState;
+    constructor Create(const aFinishedState: TAbortableTaskFinishedState;
       const aExceptionClass: TClass; const aExceptionMessage: string);
   end;
 
-  TAbortableAsyncTaskResult<T> = class(TAbortableAsyncTaskResultBase, IAbortableAsyncTaskResult<T>)
+  TAbortableAsyncTaskResult<T> = class(TAbortableAsyncTaskResultBase, IAbortableTaskResult<T>)
   strict private
     fResult: T;
     function GetResult: T;
   public
-    constructor Create(const aFinishedState: TAbortableAsyncTaskTaskFinishedState;
+    constructor Create(const aFinishedState: TAbortableTaskFinishedState;
       const aExceptionClass: TClass; const aExceptionMessage: string; const aResult: T);
   end;
 
@@ -31,7 +31,7 @@ implementation
 
 { TAbortableAsyncTaskResultBase }
 
-constructor TAbortableAsyncTaskResultBase.Create(const aFinishedState: TAbortableAsyncTaskTaskFinishedState;
+constructor TAbortableAsyncTaskResultBase.Create(const aFinishedState: TAbortableTaskFinishedState;
   const aExceptionClass: TClass; const aExceptionMessage: string);
 begin
   inherited Create;
@@ -50,14 +50,14 @@ begin
   Result := fExceptionMessage;
 end;
 
-function TAbortableAsyncTaskResultBase.GetFinishedState: TAbortableAsyncTaskTaskFinishedState;
+function TAbortableAsyncTaskResultBase.GetFinishedState: TAbortableTaskFinishedState;
 begin
   Result := fFinishedState;
 end;
 
 { TAbortableAsyncTaskResult<T> }
 
-constructor TAbortableAsyncTaskResult<T>.Create(const aFinishedState: TAbortableAsyncTaskTaskFinishedState;
+constructor TAbortableAsyncTaskResult<T>.Create(const aFinishedState: TAbortableTaskFinishedState;
   const aExceptionClass: TClass; const aExceptionMessage: string; const aResult: T);
 begin
   inherited Create(aFinishedState, aExceptionClass, aExceptionMessage);

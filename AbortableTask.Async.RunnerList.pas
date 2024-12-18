@@ -1,19 +1,19 @@
-unit AbortableAsyncTask.List;
+unit AbortableTask.Async.RunnerList;
 
 interface
 
-uses System.Classes, System.SysUtils, System.Generics.Collections, System.SyncObjs, AbortableAsyncTask.Types;
+uses System.Classes, System.SysUtils, System.Generics.Collections, System.SyncObjs, AbortableTask.Types;
 
 type
-  TAbortableAsyncTaskList = class(TInterfacedObject, IAbortableAsyncTaskList)
+  TAbortableTaskAsyncRunnerList = class(TInterfacedObject, IAbortableTaskAsyncRunnerList)
   strict private
     fCritialSection: TCriticalSection;
-    fDict: TDictionary<IAbortableAsyncTaskRunnerBase, Byte>;
+    fList: TList<IAbortableTaskAsyncRunnerBase>;
     fRequestAbortToAllEvent: TLightweightEvent;
-    procedure Add(const aRunner: IAbortableAsyncTaskRunnerBase);
-    procedure Remove(const aRunner: IAbortableAsyncTaskRunnerBase);
+    procedure Add(const aRunner: IAbortableTaskAsyncRunnerBase);
+    procedure Remove(const aRunner: IAbortableTaskAsyncRunnerBase);
     function GetCount: Integer;
-    function First: IAbortableAsyncTaskRunnerBase;
+    function First: IAbortableTaskAsyncRunnerBase;
     procedure RequestAbortToAllAndWait;
   public
     constructor Create;
@@ -24,92 +24,91 @@ implementation
 
 uses Helper.Async;
 
-{ TAbortableAsyncTaskList }
+{ TAbortableTaskAsyncRunnerList }
 
-constructor TAbortableAsyncTaskList.Create;
+constructor TAbortableTaskAsyncRunnerList.Create;
 begin
   inherited Create;
   fCritialSection := TCriticalSection.Create;
   fRequestAbortToAllEvent := TLightweightEvent.Create;
-  fDict := TDictionary<IAbortableAsyncTaskRunnerBase, Byte>.Create;
+  fList := TList<IAbortableTaskAsyncRunnerBase>.Create;
 end;
 
-destructor TAbortableAsyncTaskList.Destroy;
+destructor TAbortableTaskAsyncRunnerList.Destroy;
 begin
-  fDict.Free;
+  fList.Free;
   fRequestAbortToAllEvent.Free;
   fCritialSection.Free;
   inherited;
 end;
 
-function TAbortableAsyncTaskList.First: IAbortableAsyncTaskRunnerBase;
+function TAbortableTaskAsyncRunnerList.First: IAbortableTaskAsyncRunnerBase;
 begin
   fCritialSection.Enter;
   try
-    Result := nil;
-    if fDict.Count > 0 then
-      Result := fDict.Keys.ToArray[0];
+    Result := fList.First;
   finally
     fCritialSection.Leave;
   end;
 end;
 
-function TAbortableAsyncTaskList.GetCount: Integer;
+function TAbortableTaskAsyncRunnerList.GetCount: Integer;
 begin
   fCritialSection.Enter;
   try
-    Result := fDict.Count;
+    Result := fList.Count;
   finally
     fCritialSection.Leave;
   end;
 end;
 
-procedure TAbortableAsyncTaskList.Add(const aRunner: IAbortableAsyncTaskRunnerBase);
+procedure TAbortableTaskAsyncRunnerList.Add(const aRunner: IAbortableTaskAsyncRunnerBase);
 begin
   if fRequestAbortToAllEvent.IsSet then
     Exit;
 
   fCritialSection.Enter;
   try
-    fDict.AddOrSetValue(aRunner, 0);
+    if not fList.Contains(aRunner) then
+      fList.Add(aRunner);
   finally
     fCritialSection.Leave;
   end;
 end;
 
-procedure TAbortableAsyncTaskList.Remove(const aRunner: IAbortableAsyncTaskRunnerBase);
+procedure TAbortableTaskAsyncRunnerList.Remove(const aRunner: IAbortableTaskAsyncRunnerBase);
 begin
   if fRequestAbortToAllEvent.IsSet then
     Exit;
 
   fCritialSection.Enter;
   try
-    fDict.Remove(aRunner);
+    fList.Remove(aRunner);
   finally
     fCritialSection.Leave;
   end;
 end;
 
-procedure TAbortableAsyncTaskList.RequestAbortToAllAndWait;
+procedure TAbortableTaskAsyncRunnerList.RequestAbortToAllAndWait;
 var
   lWaitObjects: TArray<THandle>;
   i: Integer;
-  lRunner: IAbortableAsyncTaskRunnerBase;
+  lRunner: IAbortableTaskAsyncRunnerBase;
 begin
   fRequestAbortToAllEvent.SetEvent;
   try
     fCritialSection.Enter;
     try
-      SetLength(lWaitObjects, fDict.Count);
+      SetLength(lWaitObjects, fList.Count);
       i := 0;
-      for lRunner in fDict.Keys do
+      for lRunner in fList do
       begin
         lWaitObjects[i] := lRunner.WorkerThreadHandle;
         Inc(i);
         lRunner.RequestAbort;
       end;
       WaitForWhileProcessMessages(lWaitObjects, TWaitForKind.WaitForAll);
-      fDict.Clear;
+      fList.Clear;
     finally
       fCritialSection.Leave;
     end;

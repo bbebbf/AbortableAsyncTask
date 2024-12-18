@@ -1,84 +1,72 @@
-unit AbortableAsyncTask.Types;
+unit AbortableTask.Types;
 
 interface
 
 uses System.Classes, System.SysUtils, Helper.Async;
 
 type
-  IAbortableAsyncProgressIndicator<K> = interface
+  IAbortableProgressIndicator<K> = interface
     ['{0400CBCD-A1E6-4A5C-A527-79FDA318ED1B}']
     procedure ProgressBegin(const aKey: K; const aMaxWorkCount: Int64);
     procedure ProgressEnd(const aKey: K);
     procedure ProgressStep(const aKey: K; const aWorkCount: Int64);
   end;
 
-  IAbortableAsyncTask<T, K> = interface
+  IAbortableTask<T, K> = interface
     ['{E3702C3E-51AD-4EB7-9FB8-E816C039163F}']
     function GetTaskName: string;
-    procedure ExchangeProgressIndicator(out aTaskProgressIndicator: IAbortableAsyncProgressIndicator<K>;
-      const aThreadProgressIndicator: IAbortableAsyncProgressIndicator<K>);
+    procedure ExchangeProgressIndicator(out aTaskProgressIndicator: IAbortableProgressIndicator<K>;
+      const aThreadProgressIndicator: IAbortableProgressIndicator<K>);
     function GetResultForOccurredException(const aException: Exception): T;
     function GetResultForAbort(const aException: Exception): T;
     function ExecuteTask: T;
   end;
 
-  TAbortableAsyncTaskTaskFinishedState = (Unknown, Succeeded, Aborted, Excepted, WaitForError);
+  TAbortableTaskFinishedState = (Unknown, Succeeded, Aborted, Excepted, WaitForError);
 
-  IAbortableAsyncTaskResultBase = interface
+  IAbortableTaskResultBase = interface
     ['{E292DE06-D067-4795-8274-2B299C189DF1}']
-    function GetFinishedState: TAbortableAsyncTaskTaskFinishedState;
+    function GetFinishedState: TAbortableTaskFinishedState;
     function GetExceptionMessage: string;
     function GetExceptionClass: TClass;
 
-    property FinishedState: TAbortableAsyncTaskTaskFinishedState read GetFinishedState;
+    property FinishedState: TAbortableTaskFinishedState read GetFinishedState;
     property ExceptionMessage: string read GetExceptionMessage;
     property ExceptionClass: TClass read GetExceptionClass;
   end;
 
-  IAbortableAsyncTaskResult<T> = interface(IAbortableAsyncTaskResultBase)
+  IAbortableTaskResult<T> = interface(IAbortableTaskResultBase)
     ['{CDF7CFF2-AAD8-48A1-A570-89060D31BD87}']
     function GetResult: T;
     property &Result: T read GetResult;
   end;
 
-  IAbortableAsyncTaskRunnerBase = interface
+  IAbortableTaskAsyncRunnerBase = interface
     ['{C7817F76-53F6-4D41-BBEB-9663AC4DB3BD}']
     function IsRunning: Boolean;
     procedure RequestAbort;
-    function WaitForTask: IAbortableAsyncTaskResultBase;
-    function GeTAbortableAsyncTaskWorkerThreadHandle: THandle;
-    function GetRunnerObject: TObject;
-    function GetFinishedState: TAbortableAsyncTaskTaskFinishedState;
-    function GetExceptionMessage: string;
-    function GetExceptionClass: TClass;
+    function WaitForTask: IAbortableTaskResultBase;
+    function GetWorkerThreadHandle: THandle;
 
-    property WorkerThreadHandle: THandle read GeTAbortableAsyncTaskWorkerThreadHandle;
-    property RunnerObject: TObject read GetRunnerObject;
-    property FinishedState: TAbortableAsyncTaskTaskFinishedState read GetFinishedState;
-    property ExceptionMessage: string read GetExceptionMessage;
-    property ExceptionClass: TClass read GetExceptionClass;
+    property WorkerThreadHandle: THandle read GetWorkerThreadHandle;
   end;
 
-  IAbortableAsyncTaskRunner<T> = interface(IAbortableAsyncTaskRunnerBase)
+  IAbortableTaskAsyncRunner<T> = interface(IAbortableTaskAsyncRunnerBase)
     ['{65763F41-A120-4B42-8FB5-472D594956E8}']
-
-    function WaitForTaskResult: IAbortableAsyncTaskResult<T>;
-    function GetTaskResult: T;
-
-    property TaskResult: T read GetTaskResult;
+    function WaitForTaskResult: IAbortableTaskResult<T>;
   end;
 
-  IAbortableAsyncTaskList = interface
+  IAbortableTaskAsyncRunnerList = interface
     ['{BB2609C0-A2EB-4D1E-B6DE-65EF877F84B5}']
-    procedure Add(const aRunner: IAbortableAsyncTaskRunnerBase);
-    procedure Remove(const aRunner: IAbortableAsyncTaskRunnerBase);
+    procedure Add(const aRunner: IAbortableTaskAsyncRunnerBase);
+    procedure Remove(const aRunner: IAbortableTaskAsyncRunnerBase);
     function GetCount: Integer;
-    function First: IAbortableAsyncTaskRunnerBase;
+    function First: IAbortableTaskAsyncRunnerBase;
     procedure RequestAbortToAllAndWait;
     property Count: Integer read GetCount;
   end;
 
-  IAbortableAsyncTaskSharedData<T> = interface
+  IAbortableTaskAsyncSharedData<T> = interface
     ['{885D45BF-03D1-4732-B851-B34EC3EAB18A}']
     function GetExceptionMessage: string;
     function GetExceptionClass: TClass;
@@ -88,9 +76,9 @@ type
     procedure SetAbortedState(const aException: Exception; const aTaskResult: T);
     procedure SetExceptedState(const aException: Exception; const aTaskResult: T);
     function GetTaskResult: T;
-    function GetFinishedState: TAbortableAsyncTaskTaskFinishedState;
+    function GetFinishedState: TAbortableTaskFinishedState;
     property AbortRequested: Boolean read GetAbortRequested;
-    property FinishedState: TAbortableAsyncTaskTaskFinishedState read GetFinishedState;
+    property FinishedState: TAbortableTaskFinishedState read GetFinishedState;
     property TaskResult: T read GetTaskResult;
     property ExceptionMessage: string read GetExceptionMessage;
     property ExceptionClass: TClass read GetExceptionClass;

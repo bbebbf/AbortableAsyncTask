@@ -1,15 +1,15 @@
-unit AbortableAsyncTask.Tools;
+unit AbortableTask.Tools;
 
 interface
 
-uses System.SysUtils, AbortableAsyncTask.Types;
+uses System.SysUtils, AbortableTask.Types;
 
 type
   TAbortableAsyncTaskProgressBegin<K> = reference to procedure(const aKey: K; const aMaxWorkCount: Int64);
   TAbortableAsyncTaskProgressEnd<K> = reference to procedure(const aKey: K);
   TAbortableAsyncTaskProgressStep<K> = reference to procedure(const aKey: K; const aWorkCount: Int64);
 
-  TAbortableAsyncTaskProgressIndicator<K> = class(TInterfacedObject, IAbortableAsyncProgressIndicator<K>)
+  TAbortableAsyncTaskProgressIndicator<K> = class(TInterfacedObject, IAbortableProgressIndicator<K>)
   strict private
     fProgressBegin: TAbortableAsyncTaskProgressBegin<K>;
     fProgressEnd: TAbortableAsyncTaskProgressEnd<K>;
