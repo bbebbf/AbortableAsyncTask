@@ -17,7 +17,8 @@ type
     function GetTaskName: string;
     procedure ExchangeProgressIndicator(out aTaskProgressIndicator: IAbortableAsyncProgressIndicator<K>;
       const aThreadProgressIndicator: IAbortableAsyncProgressIndicator<K>);
-    procedure ExceptionOccurred(const aException: Exception);
+    function GetResultForOccurredException(const aException: Exception): T;
+    function GetResultForAbort(const aException: Exception): T;
     function ExecuteTask: T;
   end;
 
@@ -84,8 +85,8 @@ type
     function GetAbortRequested: Boolean;
     procedure RequestAbort;
     procedure SetSucceededState(const aTaskResult: T);
-    procedure SetAbortedState(const aException: Exception);
-    procedure SetExceptedState(const aException: Exception);
+    procedure SetAbortedState(const aException: Exception; const aTaskResult: T);
+    procedure SetExceptedState(const aException: Exception; const aTaskResult: T);
     function GetTaskResult: T;
     function GetFinishedState: TAbortableAsyncTaskTaskFinishedState;
     property AbortRequested: Boolean read GetAbortRequested;

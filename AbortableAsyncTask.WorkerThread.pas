@@ -63,17 +63,13 @@ begin
     except
       on Ex: EAbortableAsyncTaskAbort do
       begin
-        fAsyncThreadData.SetAbortedState(Ex);
+        lTaskResult := fAbortableAsyncTask.GetResultForAbort(Ex);
+        fAsyncThreadData.SetAbortedState(Ex, lTaskResult);
       end;
       on Ex: Exception do
       begin
-        fAsyncThreadData.SetExceptedState(Ex);
-        TThread.Synchronize(Self,
-          procedure()
-          begin
-            fAbortableAsyncTask.ExceptionOccurred(Ex);
-          end
-        );
+        lTaskResult := fAbortableAsyncTask.GetResultForOccurredException(Ex);
+        fAsyncThreadData.SetExceptedState(Ex, lTaskResult);
       end;
     end;
   finally

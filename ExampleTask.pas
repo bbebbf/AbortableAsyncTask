@@ -13,7 +13,8 @@ type
     procedure ExchangeProgressIndicator(out aTaskProgressIndicator: IAbortableAsyncProgressIndicator<Integer>;
       const aThreadProgressIndicator: IAbortableAsyncProgressIndicator<Integer>);
     function ExecuteTask: Integer;
-    procedure ExceptionOccurred(const aException: Exception);
+    function GetResultForOccurredException(const aException: Exception): Integer;
+    function GetResultForAbort(const aException: Exception): Integer;
   public
     constructor Create(const aKey: Integer; const aProgressIndicator: IAbortableAsyncProgressIndicator<Integer>);
   end;
@@ -31,11 +32,6 @@ begin
   fProgressIndicator := aProgressIndicator;
 end;
 
-procedure TExampleTask.ExceptionOccurred(const aException: Exception);
-begin
-
-end;
-
 procedure TExampleTask.ExchangeProgressIndicator(out aTaskProgressIndicator: IAbortableAsyncProgressIndicator<Integer>;
   const aThreadProgressIndicator: IAbortableAsyncProgressIndicator<Integer>);
 begin
@@ -47,7 +43,7 @@ function TExampleTask.ExecuteTask: Integer;
 var lStream: TStream;
   lWriter: TTextWriter;
 begin
-  lStream := TFileStream.Create(TPath.Combine(ExtractFilePath(ParamStr(0)), 'ExampleTask' + IntToStr(fKey) + '.txt'),
+  lStream := TFileStream.Create(TPath.Combine(ExtractFilePath(ParamStr(0)), 'ExampleTask' + IntToStr(0) + '.txt'),
     fmCreate or fmOpenWrite or fmShareDenyWrite);
   try
     lWriter := TStreamWriter.Create(lStream, TEncoding.UTF8);
@@ -70,6 +66,16 @@ begin
     lStream.Free;
   end;
   Result := 855;
+end;
+
+function TExampleTask.GetResultForAbort(const aException: Exception): Integer;
+begin
+  Result := -1;
+end;
+
+function TExampleTask.GetResultForOccurredException(const aException: Exception): Integer;
+begin
+  Result := -2;
 end;
 
 function TExampleTask.GetTaskName: string;
