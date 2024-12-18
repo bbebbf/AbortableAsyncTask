@@ -5,30 +5,31 @@ interface
 uses System.SysUtils, AbortableAsyncTask.Types;
 
 type
-  TAbortableAsyncTaskProgressBegin = reference to procedure(const aMaxWorkCount: Int64);
-  TAbortableAsyncTaskProgressEnd = reference to procedure();
-  TAbortableAsyncTaskProgressStep = reference to procedure(const aWorkCount: Int64; var aAbortRequested: Boolean);
+  TAbortableAsyncTaskProgressBegin<K> = reference to procedure(const aKey: K; const aMaxWorkCount: Int64);
+  TAbortableAsyncTaskProgressEnd<K> = reference to procedure(const aKey: K);
+  TAbortableAsyncTaskProgressStep<K> = reference to procedure(const aKey: K; const aWorkCount: Int64);
 
-  TAbortableAsyncTaskProgressIndicator = class(TInterfacedObject, IAbortableAsyncTaskProgressIndicator)
+  TAbortableAsyncTaskProgressIndicator<K> = class(TInterfacedObject, IAbortableAsyncProgressIndicator<K>)
   strict private
-    fProgressBegin: TAbortableAsyncTaskProgressBegin;
-    fProgressEnd: TAbortableAsyncTaskProgressEnd;
-    fProgressStep: TAbortableAsyncTaskProgressStep;
-    procedure ProgressBegin(const aMaxWorkCount: Int64);
-    procedure ProgressEnd();
-    procedure ProgressStep(const aWorkCount: Int64; var aAbortRequested: Boolean);
+    fProgressBegin: TAbortableAsyncTaskProgressBegin<K>;
+    fProgressEnd: TAbortableAsyncTaskProgressEnd<K>;
+    fProgressStep: TAbortableAsyncTaskProgressStep<K>;
+    procedure ProgressBegin(const aKey: K; const aMaxWorkCount: Int64);
+    procedure ProgressEnd(const aKey: K);
+    procedure ProgressStep(const aKey: K; const aWorkCount: Int64);
   public
-    constructor Create(const aProgressBegin: TAbortableAsyncTaskProgressBegin;
-      const aProgressEnd: TAbortableAsyncTaskProgressEnd;
-      const aProgressStep: TAbortableAsyncTaskProgressStep);
+    constructor Create(const aProgressBegin: TAbortableAsyncTaskProgressBegin<K>;
+      const aProgressEnd: TAbortableAsyncTaskProgressEnd<K>;
+      const aProgressStep: TAbortableAsyncTaskProgressStep<K>);
   end;
 
 implementation
 
-{ TAbortableAsyncTaskProgressIndicator }
+{ TAbortableAsyncTaskProgressIndicator<K> }
 
-constructor TAbortableAsyncTaskProgressIndicator.Create(const aProgressBegin: TAbortableAsyncTaskProgressBegin;
-  const aProgressEnd: TAbortableAsyncTaskProgressEnd; const aProgressStep: TAbortableAsyncTaskProgressStep);
+constructor TAbortableAsyncTaskProgressIndicator<K>.Create(const aProgressBegin: TAbortableAsyncTaskProgressBegin<K>;
+  const aProgressEnd: TAbortableAsyncTaskProgressEnd<K>;
+  const aProgressStep: TAbortableAsyncTaskProgressStep<K>);
 begin
   inherited Create;
   fProgressBegin := aProgressBegin;
@@ -36,19 +37,19 @@ begin
   fProgressStep := aProgressStep;
 end;
 
-procedure TAbortableAsyncTaskProgressIndicator.ProgressBegin(const aMaxWorkCount: Int64);
+procedure TAbortableAsyncTaskProgressIndicator<K>.ProgressBegin(const aKey: K; const aMaxWorkCount: Int64);
 begin
-  fProgressBegin(aMaxWorkCount);
+  fProgressBegin(aKey, aMaxWorkCount);
 end;
 
-procedure TAbortableAsyncTaskProgressIndicator.ProgressEnd;
+procedure TAbortableAsyncTaskProgressIndicator<K>.ProgressEnd(const aKey: K);
 begin
-  fProgressEnd();
+  fProgressEnd(aKey);
 end;
 
-procedure TAbortableAsyncTaskProgressIndicator.ProgressStep(const aWorkCount: Int64; var aAbortRequested: Boolean);
+procedure TAbortableAsyncTaskProgressIndicator<K>.ProgressStep(const aKey: K; const aWorkCount: Int64);
 begin
-  fProgressStep(aWorkCount, aAbortRequested);
+  fProgressStep(aKey, aWorkCount);
 end;
 
 end.
