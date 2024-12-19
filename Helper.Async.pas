@@ -7,6 +7,7 @@ type
 
   TWaitForResult = record
     State: TWaitForState;
+    TriggeringWaitObjectIndex: Cardinal;
     LastError: Cardinal;
   end;
 
@@ -22,6 +23,11 @@ function WaitForWhileProcessMessages(const aWaitObjects: TArray<THandle>;
 implementation
 
 uses Winapi.Windows;
+
+function InRangeCardinal(const aMinimum, aValue, aMaximum: Cardinal): Boolean;
+begin
+  Result := (aMinimum <= aValue) and (aValue <= aMaximum);
+end;
 
 function WaitForWhileProcessMessages(const aWaitObjects: TArray<THandle>;
   const aWaitForKind: TWaitForKind): TWaitForResult;
@@ -62,13 +68,7 @@ begin
   while True do
   begin
     lWaitResult := MsgWaitForMultipleObjects(lWaitObjectsCount, lWaitObjects[0], lWaitForAll, aTimeout, QS_ALLINPUT);
-    if lWaitResult = WAIT_OBJECT_0 then
-    begin
-      // One or all wait objects are in signaled state.
-      Result.State := TWaitForState.Signaled;
-      Exit;
-    end
-    else if lWaitResult = WAIT_OBJECT_0 + lWaitObjectsCount then
+    if lWaitResult = WAIT_OBJECT_0 + lWaitObjectsCount then
     begin
       // Queued messages will be processed while waiting.
       while PeekMessage(lMsg, 0, 0, 0, PM_REMOVE) do
@@ -76,10 +76,20 @@ begin
         DispatchMessage(lMsg);
       end;
     end
-    else if lWaitResult = WAIT_ABANDONED_0 then
+    else if InRangeCardinal(WAIT_OBJECT_0, lWaitResult, WAIT_OBJECT_0 + lWaitObjectsCount - 1)  then
     begin
-      // One or all wait objects are in abandoned state.
+      // One or all wait objects are in signaled state.
+      Result.State := TWaitForState.Signaled;
+      if not lWaitForAll then
+        Result.TriggeringWaitObjectIndex := lWaitResult - WAIT_OBJECT_0;
+      Exit;
+    end
+    else if InRangeCardinal(WAIT_ABANDONED_0, lWaitResult, WAIT_ABANDONED_0 + lWaitObjectsCount - 1)  then
+    begin
+      // One or all wait objects are in signaled state and at one objects is in abandoned state.
       Result.State := TWaitForState.Abandoned;
+      if not lWaitForAll then
+        Result.TriggeringWaitObjectIndex := lWaitResult - WAIT_ABANDONED_0;
       Exit;
     end
     else if lWaitResult = WAIT_TIMEOUT then
