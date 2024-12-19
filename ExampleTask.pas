@@ -2,22 +2,23 @@ unit ExampleTask;
 
 interface
 
-uses System.SysUtils, AbortableTask.Types;
+uses System.SysUtils, AbortableTask.Types, AbortableTaskApp.Types;
 
 type
   TExampleTask = class(TInterfacedObject, IAbortableTask<Integer, Integer>)
   strict private
     fKey: Integer;
     fMax: Integer;
-    fProgressIndicator: IAbortableProgressIndicator<Integer>;
+    fProgressIndicator: IAbortableTaskAppProgressIndicator<Integer>;
+    fTaskProcessor: IAbortableTaskProcessor;
+
     function GetTaskName: string;
-    procedure ExchangeProgressIndicator(out aTaskProgressIndicator: IAbortableProgressIndicator<Integer>;
-      const aThreadProgressIndicator: IAbortableProgressIndicator<Integer>);
+    procedure SetTaskProcessor(const aTaskProcessor: IAbortableTaskProcessor);
     function ExecuteTask: Integer;
     function GetResultForOccurredException(const aException: Exception): Integer;
     function GetResultForAbort(const aException: Exception): Integer;
   public
-    constructor Create(const aKey: Integer; const aProgressIndicator: IAbortableProgressIndicator<Integer>);
+    constructor Create(const aKey: Integer; const aProgressIndicator: IAbortableTaskAppProgressIndicator<Integer>);
   end;
 
 implementation
@@ -26,7 +27,7 @@ uses System.Classes, System.IOUtils;
 
 { TExampleTask }
 
-constructor TExampleTask.Create(const aKey: Integer; const aProgressIndicator: IAbortableProgressIndicator<Integer>);
+constructor TExampleTask.Create(const aKey: Integer; const aProgressIndicator: IAbortableTaskAppProgressIndicator<Integer>);
 begin
   inherited Create;
   fKey := aKey;
@@ -35,11 +36,9 @@ begin
   fMax := Random(200) + 20;
 end;
 
-procedure TExampleTask.ExchangeProgressIndicator(out aTaskProgressIndicator: IAbortableProgressIndicator<Integer>;
-  const aThreadProgressIndicator: IAbortableProgressIndicator<Integer>);
+procedure TExampleTask.SetTaskProcessor(const aTaskProcessor: IAbortableTaskProcessor);
 begin
-  aTaskProgressIndicator := fProgressIndicator;
-  fProgressIndicator := aThreadProgressIndicator;
+  fTaskProcessor := aTaskProcessor;
 end;
 
 function TExampleTask.ExecuteTask: Integer;
@@ -52,15 +51,36 @@ begin
     lWriter := TStreamWriter.Create(lStream, TEncoding.UTF8);
     try
       lWriter.Write('Begin > ' + FormatDateTime('hh:nn:ss:zzz', Now)  + sLineBreak);
-      fProgressIndicator.ProgressBegin(fKey, fMax);
+
+      fTaskProcessor.QueueMethod(
+        procedure
+        begin
+          fProgressIndicator.ProgressBegin(fKey, fMax);
+        end
+      );
+
       for var i := 1 to fMax do
       begin
-        fProgressIndicator.ProgressStep(fKey, i);
+        fTaskProcessor.CheckForRequestAbort;
+
+        fTaskProcessor.QueueMethod(
+          procedure
+          begin
+            fProgressIndicator.ProgressStep(fKey, i);
+          end
+        );
+
         lWriter.Write(IntToStr(i) + ' > ' + FormatDateTime('hh:nn:ss:zzz', Now)  + sLineBreak);
         Sleep(Random(900) + 100);
       end;
     finally
-      fProgressIndicator.ProgressEnd(fKey);
+      fTaskProcessor.QueueMethod(
+        procedure
+        begin
+          fProgressIndicator.ProgressEnd(fKey);
+        end
+      );
+
       lWriter.Write('End > ' + FormatDateTime('hh:nn:ss:zzz', Now)  + sLineBreak);
       lWriter.Free;
     end;

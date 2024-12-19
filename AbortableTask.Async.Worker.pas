@@ -5,22 +5,20 @@ interface
 uses System.Classes, AbortableTask.Types;
 
 type
-  TAbortableAsyncTaskWorker<T, K> = class(TThread, IAbortableProgressIndicator<K>)
+  TAbortableAsyncTaskWorker<T, K> = class(TThread, IAbortableTaskProcessor)
   strict private
     fRunner: IAbortableTaskAsyncRunner<T>;
     fAbortableTask: IAbortableTask<T, K>;
     fSharedData: IAbortableTaskAsyncSharedData<T>;
     fRunnerList: IAbortableTaskAsyncRunnerList;
-    fProgressIndicator: IAbortableProgressIndicator<K>;
     fAbortRequested: Boolean;
+
+    procedure QueueMethod(const aQueueableMethod: TQueueableMethod);
+    procedure CheckForRequestAbort;
 
     function QueryInterface(const IID: TGUID; out Obj): HResult; stdcall;
     function _AddRef: Integer; stdcall;
     function _Release: Integer; stdcall;
-
-    procedure ProgressBegin(const aKey: K; const aMaxWorkCount: Int64);
-    procedure ProgressStep(const aKey: K; const aWorkCount: Int64);
-    procedure ProgressEnd(const aKey: K);
 
     procedure RequestAbort;
   strict protected
@@ -48,7 +46,7 @@ begin
   fRunnerList := aRunnerList;
   fSharedData := aAsyncThreadData;
   fAbortableTask := aAbortableTask;
-  fAbortableTask.ExchangeProgressIndicator(fProgressIndicator, Self);
+  fAbortableTask.SetTaskProcessor(Self);
 end;
 
 procedure TAbortableAsyncTaskWorker<T, K>.Execute;
@@ -88,50 +86,22 @@ begin
   raise EAbortableAsyncTaskAbort.Create('Task ' + fAbortableTask.GetTaskName + ' aborted.');
 end;
 
-procedure TAbortableAsyncTaskWorker<T, K>.ProgressBegin(const aKey: K; const aMaxWorkCount: Int64);
+procedure TAbortableAsyncTaskWorker<T, K>.CheckForRequestAbort;
 begin
-  if not Assigned(fProgressIndicator) then
-    Exit;
-
-  TThread.Queue(Self,
-    procedure()
-    begin
-      fProgressIndicator.ProgressBegin(aKey, aMaxWorkCount);
-    end
-  );
-end;
-
-procedure TAbortableAsyncTaskWorker<T, K>.ProgressEnd(const aKey: K);
-begin
-  if not Assigned(fProgressIndicator) then
-    Exit;
-
-  TThread.Queue(Self,
-    procedure()
-    begin
-      fProgressIndicator.ProgressEnd(aKey);
-    end
-  );
-end;
-
-procedure TAbortableAsyncTaskWorker<T, K>.ProgressStep(const aKey: K; const aWorkCount: Int64);
-begin
-  var lAbortRequested := fSharedData.AbortRequested;
-  if lAbortRequested then
+  if fSharedData.AbortRequested then
   begin
     RequestAbort;
-    Exit;
   end;
+end;
 
-  if not Assigned(fProgressIndicator) then
-    Exit;
-
+procedure TAbortableAsyncTaskWorker<T, K>.QueueMethod(const aQueueableMethod: TQueueableMethod);
+begin
   TThread.Queue(Self,
     procedure()
     begin
-      fProgressIndicator.ProgressStep(aKey, aWorkCount);
+      aQueueableMethod();
     end
-  );
+    );
 end;
 
 function TAbortableAsyncTaskWorker<T, K>.QueryInterface(const IID: TGUID; out Obj): HResult;

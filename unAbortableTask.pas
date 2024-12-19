@@ -8,7 +8,7 @@ uses
   AbortableTask.Types;
 
 type
-  TfmMain = class(TForm, IAbortableProgressIndicator<Integer>)
+  TfmMain = class(TForm)
     pnTop: TPanel;
     btTaskStart: TButton;
     ScrollBox: TScrollBox;
@@ -19,9 +19,6 @@ type
   private
     fAbortableAsyncTaskList: IAbortableTaskAsyncRunnerList;
     fFrameCounter: Integer;
-    procedure ProgressBegin(const aKey: Integer; const aMaxWorkCount: Int64);
-    procedure ProgressEnd(const aKey: Integer);
-    procedure ProgressStep(const aKey: Integer; const aWorkCount: Int64);
   public
   end;
 
@@ -74,18 +71,6 @@ begin
       CanClose := False;
     end;
   end;
-end;
-
-procedure TfmMain.ProgressBegin(const aKey: Integer; const aMaxWorkCount: Int64);
-begin
-end;
-
-procedure TfmMain.ProgressEnd(const aKey: Integer);
-begin
-end;
-
-procedure TfmMain.ProgressStep(const aKey: Integer; const aWorkCount: Int64);
-begin
 end;
 
 end.

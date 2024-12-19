@@ -5,10 +5,10 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes,
   Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ComCtrls,
-  AbortableTask.Types;
+  AbortableTask.Types, AbortableTaskApp.Types;
 
 type
-  TfraTask = class(TFrame, IAbortableProgressIndicator<Integer>)
+  TfraTask = class(TFrame, IAbortableTaskAppProgressIndicator<Integer>)
     ProgressBar: TProgressBar;
     btWaitFor: TButton;
     btAbort: TButton;

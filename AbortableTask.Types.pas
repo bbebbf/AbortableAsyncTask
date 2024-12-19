@@ -5,18 +5,18 @@ interface
 uses System.Classes, System.SysUtils, Helper.Async;
 
 type
-  IAbortableProgressIndicator<K> = interface
-    ['{0400CBCD-A1E6-4A5C-A527-79FDA318ED1B}']
-    procedure ProgressBegin(const aKey: K; const aMaxWorkCount: Int64);
-    procedure ProgressEnd(const aKey: K);
-    procedure ProgressStep(const aKey: K; const aWorkCount: Int64);
+  TQueueableMethod = reference to procedure;
+
+  IAbortableTaskProcessor = interface
+    ['{3AFC9542-14E5-45D0-94BE-DF950DBC659A}']
+    procedure QueueMethod(const aQueueableMethod: TQueueableMethod);
+    procedure CheckForRequestAbort;
   end;
 
   IAbortableTask<T, K> = interface
     ['{E3702C3E-51AD-4EB7-9FB8-E816C039163F}']
     function GetTaskName: string;
-    procedure ExchangeProgressIndicator(out aTaskProgressIndicator: IAbortableProgressIndicator<K>;
-      const aThreadProgressIndicator: IAbortableProgressIndicator<K>);
+    procedure SetTaskProcessor(const aTaskProcessor: IAbortableTaskProcessor);
     function GetResultForOccurredException(const aException: Exception): T;
     function GetResultForAbort(const aException: Exception): T;
     function ExecuteTask: T;

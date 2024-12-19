@@ -7,12 +7,12 @@ uses
   AbortableTask.Async.SharedData in 'AbortableTask.Async.SharedData.pas',
   AbortableTask.Async.Worker in 'AbortableTask.Async.Worker.pas',
   AbortableTask.Result in 'AbortableTask.Result.pas',
-  AbortableTask.Tools in 'AbortableTask.Tools.pas',
   AbortableTask.Types in 'AbortableTask.Types.pas',
   ExampleTask in 'ExampleTask.pas',
   Helper.Async in 'Helper.Async.pas',
   unAbortableTask in 'unAbortableTask.pas' {fmMain},
-  unFraTask in 'unFraTask.pas' {fraTask: TFrame};
+  unFraTask in 'unFraTask.pas' {fraTask: TFrame},
+  AbortableTaskApp.Types in 'AbortableTaskApp.Types.pas';
 
 {$R *.res}
 

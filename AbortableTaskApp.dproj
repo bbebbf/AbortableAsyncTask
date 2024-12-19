@@ -130,7 +130,6 @@
         <DCCReference Include="AbortableTask.Async.SharedData.pas"/>
         <DCCReference Include="AbortableTask.Async.Worker.pas"/>
         <DCCReference Include="AbortableTask.Result.pas"/>
-        <DCCReference Include="AbortableTask.Tools.pas"/>
         <DCCReference Include="AbortableTask.Types.pas"/>
         <DCCReference Include="ExampleTask.pas"/>
         <DCCReference Include="Helper.Async.pas"/>
@@ -143,6 +142,7 @@
             <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
+        <DCCReference Include="AbortableTaskApp.Types.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>
