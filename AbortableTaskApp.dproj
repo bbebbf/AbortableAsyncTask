@@ -6,7 +6,7 @@
         <Base>True</Base>
         <Config Condition="'$(Config)'==''">Debug</Config>
         <Platform Condition="'$(Platform)'==''">Win32</Platform>
-        <ProjectName Condition="'$(ProjectName)'==''">AbortableTaskApp</ProjectName>
+        <ProjectName Condition="'$(ProjectName)'==''">AbortableAsyncTaskApp</ProjectName>
         <TargetedPlatforms>3</TargetedPlatforms>
         <AppType>Application</AppType>
         <MainSource>AbortableTaskApp.dpr</MainSource>
@@ -125,13 +125,13 @@
         <DelphiCompile Include="$(MainSource)">
             <MainSource>MainSource</MainSource>
         </DelphiCompile>
-        <DCCReference Include="AbortableTask.Async.RunnerList.pas"/>
-        <DCCReference Include="AbortableTask.Result.pas"/>
         <DCCReference Include="AbortableTask.Async.Runner.pas"/>
+        <DCCReference Include="AbortableTask.Async.RunnerList.pas"/>
         <DCCReference Include="AbortableTask.Async.SharedData.pas"/>
+        <DCCReference Include="AbortableTask.Async.Worker.pas"/>
+        <DCCReference Include="AbortableTask.Result.pas"/>
         <DCCReference Include="AbortableTask.Tools.pas"/>
         <DCCReference Include="AbortableTask.Types.pas"/>
-        <DCCReference Include="AbortableTask.Async.Worker.pas"/>
         <DCCReference Include="ExampleTask.pas"/>
         <DCCReference Include="Helper.Async.pas"/>
         <DCCReference Include="unAbortableTask.pas">
@@ -833,9 +833,6 @@
                         <Operation>1</Operation>
                     </Platform>
                     <Platform Name="Win64">
-                        <Operation>1</Operation>
-                    </Platform>
-                    <Platform Name="Win64x">
                         <Operation>1</Operation>
                     </Platform>
                 </DeployClass>
